@@ -1,0 +1,9 @@
+# Project
+.env
+
+# IDE
+.idea
+
+# OS
+.DS_Store
+desktop.ini
