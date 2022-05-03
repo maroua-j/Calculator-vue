@@ -2,21 +2,21 @@
   <h1>La Xixi Calc</h1>
   <div class="wrapper">
     <div class="output">
-    <div class="outputCalc">{{ calcul || 0 }}</div>
-    <div class="outputCalc">{{ value || result }}</div>
-  </div>
-  <div class="buttons">
-    <div
-      class="button"
-      v-for="n in btnArr"
-      :key="n"
-      :class="{ operator: ['C', '+/-', '*', '/', '-', '+', '%', '='].includes(n) }"
-    >
-      <div class="btn" @click="action(n)">
-        {{ n }}
+      <div class="outputCalc">{{ calcul || 0 }}</div>
+      <div class="outputCalc">{{ value || result }}</div>
+    </div>
+    <div class="buttons">
+      <div
+        class="button"
+        v-for="n in btnArr"
+        :key="n"
+        :class="{ operator: ['C', '+/-', '*', '/', '-', '+', '%', '='].includes(n) }"
+      >
+        <div class="btn" @click="action(n)">
+          {{ n }}
+        </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
