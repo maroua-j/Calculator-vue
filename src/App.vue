@@ -1,39 +1,32 @@
 <template>
-  <h1></h1>
-  <div class="output">
-    <div class="outputCalc">{{ calculatorValue || 0 }}</div>
+  <h1>La Xixi Calc</h1>
+  <div class="wrapper">
+    <div class="output">
+    <div class="outputCalc">{{ calcul || 0 }}</div>
+    <div class="outputCalc">{{ value || result }}</div>
   </div>
   <div class="buttons">
     <div
       class="button"
       v-for="n in btnArr"
       :key="n"
-      :class="{ operator: ['C', '+-', '*', '/', '-', '+', '%', '='].includes(n) }"
+      :class="{ operator: ['C', '+/-', '*', '/', '-', '+', '%', '='].includes(n) }"
     >
       <div class="btn" @click="action(n)">
         {{ n }}
       </div>
     </div>
   </div>
-  <footer>
-    made by
-    <a
-      style="text-decoration: none"
-      href="https://github.com/GPSxtreme"
-      target="_blank"
-      ><span class="MyId">GPSxtreme</span></a
-    >
-  </footer>
+  </div>
 </template>
 
 <script>
 export default {
   data() {
     return {
-      calculatorValue: "",
       btnArr: [
         "C", 
-        '+-',
+        '+/-',
         "*",
         "/",
         "-",
@@ -52,60 +45,99 @@ export default {
         "0",
         ".",
       ],
-      operator: null,
-      previousCalculatorValue: "",
+      calcul: "",
+      value: "",
+      result: ""
     };
   },
   methods: {
-    action(n) {
-      /* Append value */
-      if (!isNaN(n) || n === ".") {
-        this.calculatorValue += n + "";
+    action(e) {
+      //get stored variable
+      let newCalcul = this.calcul; 
+      let newValue = this.value;
+      let newResult = this.result;
+
+      console.log(newCalcul,newValue,newResult);
+
+      //if button is not a number or .
+      if(isNaN(e) && e !== ".") {
+        if(e === "=") {
+          //must have something in new value for calculate
+          if(newValue !== ""){
+            newCalcul = ""; 
+            newValue = "";
+            //twice eval to avoid js decimal problems
+            //Number() to delete leading 0
+            newResult = eval(eval(this.calcul + Number(this.value)).toFixed(13));
+          }
+        } else if(e === "C") {
+          newCalcul = ""; 
+          newValue = "";
+          newResult = "";
+        } else if(e === "+/-") {
+          if(newResult !== "") {
+            newValue = eval(newResult * -1);
+            newResult = "";
+          } else {
+            newValue = eval(newValue * -1);
+          }
+        //all operators
+        } else if(e === "%") {
+          if(newResult !== "") {
+            newValue = eval(eval(newResult / 100).toFixed(13));
+            newResult = "";
+          } else {
+            newCalcul = "";
+            newValue = eval(eval("(" + this.calcul + Number(this.value) +") / 100").toFixed(13));
+          }
+        } else {
+          if(newResult !== "") {
+            newCalcul = newResult + e;
+            newResult = "";
+          } else {
+            if(newValue === ""){
+              //replace previous operator 
+              newCalcul = newCalcul.replace(/.$/, e);
+            } else {
+              newCalcul = eval(eval(this.calcul + Number(this.value)).toFixed(13)) + e;
+              newValue = "";
+            }
+          }
+        }
+      } else {
+        //check if never use dot
+        if((e === "." && newValue.indexOf(".") === -1) || e !== ".") {
+          if(newResult !== "") {
+            newResult = "";
+          }
+          newValue += e;
+        }
       }
-      /* Clear value */
-      if (n === "C") {
-        this.calculatorValue = "";
-      }
-      /* Percentage */
-      if (n === "%") {
-        this.calculatorValue = this.calculatorValue / 100 + "";
-      }
-      /* Operators */
-      if (["/", "*", "-", "+"].includes(n)) {
-        this.operator = n;
-        this.previousCalculatorValue = this.calculatorValue;
-        this.calculatorValue = "";
-      }
-      /* Inverts */
-      if (n === "+-" && this.calculatorValue !== 0){
-        this.calculatorValue = this.calculatorValue*(-1);
-      }
-      /* Calculate result using the eval function */
-      if (n === "=") {
-        this.calculatorValue = eval(
-          this.previousCalculatorValue + this.operator + this.calculatorValue
-        );
-        this.previousCalculatorValue = "";
-        this.operator = null;
-      }
+
+      this.calcul = newCalcul;
+      this.value = newValue;
+      this.result = newResult;
     },
   },
 };
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Water+Brush&display=swap');
 h1 {
-  margin-top: 100px;
   text-align: center;
+  font-family: 'Water Brush', cursive;
+  font-size: 10ex;
+  color : #707e68;
+  margin-top: 0px;
+  margin-bottom: 1px;
 }
 .output {
   text-align: right;
-  background-color: antiquewhite;
+  background-color: #e7d9d5c2;
   width: min(300px, 70%);
   margin: 10px auto;
-  padding: 10px;
-  border: 0.5px solid rgb(255, 198, 124);
-  border-radius: 4px;
+  border-radius: 6px;
   box-shadow: 2.8px 2.8px 2.2px rgba(0, 0, 0, 0.008),
     6.7px 6.7px 5.3px rgba(0, 0, 0, 0.012),
     12.5px 12.5px 10px rgba(0, 0, 0, 0.015),
@@ -114,19 +146,18 @@ h1 {
     100px 100px 80px rgba(0, 0, 0, 0.03);
 }
 .outputCalc {
-  background-color: rgb(255, 209, 148);
+  background-color: #e7d9d5c2;
   padding: 15px;
-  border-radius: 3px;
+  color: rgb(134, 117, 117);
 }
 .buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-auto-rows: minmax(50px, auto);
   width: min(300px, 70%);
-  border: 0.2px solid rgb(255, 198, 124);
   border-radius: 4px;
   align-items: center;
-  background-color: antiquewhite;
+  background-color: #7da095;
   justify-content: center;
   margin: 10px auto;
   gap: 5px;
@@ -138,47 +169,45 @@ h1 {
     100px 100px 80px rgba(0, 0, 0, 0.03);
 }
 .button {
-  background-color: rgb(255, 209, 148);
+  background-color: #acc1c9;
   padding: 6px;
   border-radius: 3px;
   margin: 4px;
   font-size: 1.5em;
   font-weight: bold;
-  color: #000;
+  color: rgb(255, 255, 255);
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
 .button:hover {
-  background-color: rgb(238, 167, 75);
-  color: #000;
+  background-color: #98A7AC;
+  color: rgb(255, 255, 255);
 }
 .operator {
-  background-color: rgb(238, 167, 75);
-  color: #000;
+  background-color: #188674;
+  color: rgb(255, 255, 255);
 }
 .operator:hover {
-  background-color: rgb(255, 209, 148);
+  background-color: #707e68
 }
 .MyId:hover {
   cursor: pointer;
   filter: brightness(130%);
 }
-footer {
-  text-align: center;
-  width: min(300px, 90%);
-  border-radius: 3px;
-  margin: 100px auto;
-  background-color: #0000002a;
-  padding: 10px;
-  font-weight: bold;
-  color: #444;
-  text-transform: capitalize;
-  box-shadow: 2.8px 2.8px 2.2px rgba(0, 0, 0, 0.008),
-    6.7px 6.7px 5.3px rgba(0, 0, 0, 0.012),
-    12.5px 12.5px 10px rgba(0, 0, 0, 0.015),
-    22.3px 22.3px 17.9px rgba(0, 0, 0, 0.018),
-    41.8px 41.8px 33.4px rgba(0, 0, 0, 0.022),
-    100px 100px 80px rgba(0, 0, 0, 0.03);
+.wrapper {
+    width: 340px;
+    height: 400px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #D3A595;
+}
+body {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e4d1c8;
+  background-image: linear-gradient(200deg, #fefeff 0%, #d7b9aae8 80%, #707e68 0%);
 }
 </style>
