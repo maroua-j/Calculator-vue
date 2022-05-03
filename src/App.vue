@@ -1,39 +1,30 @@
 <template>
   <h1></h1>
   <div class="output">
-    <div class="outputCalc">{{ calculatorValue || 0 }}</div>
+    <div class="outputCalc">{{ calcul || 0 }}</div>
+    <div class="outputCalc">{{ value || result }}</div>
   </div>
   <div class="buttons">
     <div
       class="button"
       v-for="n in btnArr"
       :key="n"
-      :class="{ operator: ['C', '+-', '*', '/', '-', '+', '%', '='].includes(n) }"
+      :class="{ operator: ['C', '+/-', '*', '/', '-', '+', '%', '='].includes(n) }"
     >
       <div class="btn" @click="action(n)">
         {{ n }}
       </div>
     </div>
   </div>
-  <footer>
-    made by
-    <a
-      style="text-decoration: none"
-      href="https://github.com/GPSxtreme"
-      target="_blank"
-      ><span class="MyId">GPSxtreme</span></a
-    >
-  </footer>
 </template>
 
 <script>
 export default {
   data() {
     return {
-      calculatorValue: "",
       btnArr: [
         "C", 
-        '+-',
+        '+/-',
         "*",
         "/",
         "-",
@@ -52,42 +43,78 @@ export default {
         "0",
         ".",
       ],
-      operator: null,
-      previousCalculatorValue: "",
+      calcul: "",
+      value: "",
+      result: ""
     };
   },
   methods: {
-    action(n) {
-      /* Append value */
-      if (!isNaN(n) || n === ".") {
-        this.calculatorValue += n + "";
+    action(e) {
+      //get stored variable
+      let newCalcul = this.calcul; 
+      let newValue = this.value;
+      let newResult = this.result;
+
+      console.log(newCalcul,newValue,newResult);
+
+      //if button is not a number or .
+      if(isNaN(e) && e !== ".") {
+        if(e === "=") {
+          //must have something in new value for calculate
+          if(newValue !== ""){
+            newCalcul = ""; 
+            newValue = "";
+            //twice eval to avoid js decimal problems
+            //Number() to delete leading 0
+            newResult = eval(eval(this.calcul + Number(this.value)).toFixed(13));
+          }
+        } else if(e === "C") {
+          newCalcul = ""; 
+          newValue = "";
+          newResult = "";
+        } else if(e === "+/-") {
+          if(newResult !== "") {
+            newValue = eval(newResult * -1);
+            newResult = "";
+          } else {
+            newValue = eval(newValue * -1);
+          }
+        //all operators
+        } else if(e === "%") {
+          if(newResult !== "") {
+            newValue = eval(eval(newResult / 100).toFixed(13));
+            newResult = "";
+          } else {
+            newCalcul = "";
+            newValue = eval(eval("(" + this.calcul + Number(this.value) +") / 100").toFixed(13));
+          }
+        } else {
+          if(newResult !== "") {
+            newCalcul = newResult + e;
+            newResult = "";
+          } else {
+            if(newValue === ""){
+              //replace previous operator 
+              newCalcul = newCalcul.replace(/.$/, e);
+            } else {
+              newCalcul = eval(eval(this.calcul + Number(this.value)).toFixed(13)) + e;
+              newValue = "";
+            }
+          }
+        }
+      } else {
+        //check if never use dot
+        if((e === "." && newValue.indexOf(".") === -1) || e !== ".") {
+          if(newResult !== "") {
+            newResult = "";
+          }
+          newValue += e;
+        }
       }
-      /* Clear value */
-      if (n === "C") {
-        this.calculatorValue = "";
-      }
-      /* Percentage */
-      if (n === "%") {
-        this.calculatorValue = this.calculatorValue / 100 + "";
-      }
-      /* Operators */
-      if (["/", "*", "-", "+"].includes(n)) {
-        this.operator = n;
-        this.previousCalculatorValue = this.calculatorValue;
-        this.calculatorValue = "";
-      }
-      /* Inverts */
-      if (n === "+-" && this.calculatorValue !== 0){
-        this.calculatorValue = this.calculatorValue*(-1);
-      }
-      /* Calculate result using the eval function */
-      if (n === "=") {
-        this.calculatorValue = eval(
-          this.previousCalculatorValue + this.operator + this.calculatorValue
-        );
-        this.previousCalculatorValue = "";
-        this.operator = null;
-      }
+
+      this.calcul = newCalcul;
+      this.value = newValue;
+      this.result = newResult;
     },
   },
 };
