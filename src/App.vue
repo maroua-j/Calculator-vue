@@ -80,6 +80,14 @@ export default {
             newValue = eval(newValue * -1);
           }
         //all operators
+        } else if(e === "%") {
+          if(newResult !== "") {
+            newValue = eval(eval(newResult / 100).toFixed(13));
+            newResult = "";
+          } else {
+            newCalcul = "";
+            newValue = eval(eval("(" + this.calcul + Number(this.value) +") / 100").toFixed(13));
+          }
         } else {
           if(newResult !== "") {
             newCalcul = newResult + e;
